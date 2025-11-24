@@ -56,7 +56,7 @@ pip install -r ComfyUI-Gemini3/requirements.txt
 
 **Error 429 (Resource Exhausted)**
 
- Don't panic! This is normal behavior for free-tier API keys.Solution: The node handles this automatically. It will cycle through your provided keys. If all keys are exhausted, it will wait 15 seconds and try again. It will repeat this process up to 20 times before finally stopping.
+ Don't panic! This is normal behavior for free-tier API keys.Solution: The node handles this automatically. It will cycle through your provided keys. If all keys are exhausted, it will wait 15 seconds and try again. It will repeat this process up to 10 times before finally stopping.
  
 **ImportError: No module named 'google'**
 
