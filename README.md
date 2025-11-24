@@ -7,7 +7,7 @@ This node is engineered for high-demand production workflows, featuring built-in
 
 - **Native Image Support:** Uses the latest ```gemini-3-pro-image-preview``` model to receive direct binary image data. *No unstable Base64 text decoding required.*
 - **Multi-API Key Load Balancing:** Supports up to **3 API Keys** (```api_key_1```, ```api_key_2```, ```api_key_3```). If your primary key hits a rate limit, the node automatically switches to the next available key without stopping the workflow.
-- **Smart Auto-Retry System:** If all keys are exhausted (Error 429), the node intelligently pauses for **15 seconds** and retries the entire sequence automatically (up to **20 times**). This ensures your long batch renders don't crash overnight.
+- **Smart Auto-Retry System:** If all keys are exhausted (Error 429), the node intelligently pauses for **15 seconds** and retries the entire sequence automatically (up to **10 times**). This ensures your long batch renders don't crash overnight.
 - **Stream Handling:** Efficiently processes the streaming response from Google GenAI to capture both high-quality image and text outputs simultaneously.
 
 # 📦 Installation
