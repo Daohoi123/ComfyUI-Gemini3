@@ -32,7 +32,7 @@ pip install -r ComfyUI-Gemini3/requirements.txt
 **1. Add the Node:**
 - Right-click in the ComfyUI workflow canvas.
 - Navigate to: ```Gemini AI``` -> ```Gemini 3 Pro```.
-<img width="601" height="392" alt="image" src="https://github.com/user-attachments/assets/eec7b3cc-18f5-4bc8-9cd2-6f257a29abb9" />
+<img width="590" height="347" alt="image" src="https://github.com/user-attachments/assets/b0693c25-2f83-4edb-9d68-5ae06b3bfd41" />
 
 **2. Connect Inputs:**
 - ```image```: Connect an image source (e.g., ```Load Image```, ```VAE Decode```).
