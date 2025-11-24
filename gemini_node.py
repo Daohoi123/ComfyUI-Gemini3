@@ -8,12 +8,12 @@ from google.genai import types
 
 class Gemini3ProImageNode:
     """
-    ComfyUI Node for Google Gemini 3 Pro (Image Preview).
+    ComfyUI Node for Google Gemini 3 Pro.
     Features:
-    - Supports 'gemini-3-pro-image-preview' model.
-    - Multi-API Key support (Inputs grouped together).
-    - Robust Error Handling: Switches keys on ANY error (429, 500, 503, Network error, etc.).
-    - Auto-retry: Waits 15s and retries if all keys fail (Max 20 retries).
+    - Supports 'gemini-3-pro-image-preview'.
+    - Supports up to 3 optional input images.
+    - Multi-API Key support (Keys grouped together in UI).
+    - Auto-retry on error (Max 10 retries).
     """
 
     def __init__(self):
@@ -23,14 +23,19 @@ class Gemini3ProImageNode:
     def INPUT_TYPES(s):
         return {
             "required": {
-                "image": ("IMAGE",),
-                # Grouped API Keys for better UI UX
+                # UI Layout: Group API Keys together at the top
                 "api_key_1": ("STRING", {"multiline": False, "default": "", "placeholder": "Primary API Key (Required)"}),
                 "api_key_2": ("STRING", {"multiline": False, "default": "", "placeholder": "Backup API Key 1 (Optional)"}),
                 "api_key_3": ("STRING", {"multiline": False, "default": "", "placeholder": "Backup API Key 2 (Optional)"}),
                 
                 "prompt": ("STRING", {"multiline": True, "default": "Make this image cyberpunk style", "placeholder": "Enter your prompt here..."}),
                 "model_name": (["gemini-3-pro-image-preview"], {"default": "gemini-3-pro-image-preview"}),
+            },
+            "optional": {
+                # Input Images (Connectors)
+                "image_1": ("IMAGE",),
+                "image_2": ("IMAGE",),
+                "image_3": ("IMAGE",),
             }
         }
 
@@ -39,22 +44,35 @@ class Gemini3ProImageNode:
     FUNCTION = "process_image"
     CATEGORY = "Gemini AI"
 
-    def process_image(self, image, api_key_1, prompt, model_name, api_key_2="", api_key_3=""):
-        # 1. Collect valid API Keys
+    def process_image(self, api_key_1, prompt, model_name, api_key_2="", api_key_3="", image_1=None, image_2=None, image_3=None):
+        # 1. Validate Prompt
+        if not prompt or not prompt.strip():
+            raise ValueError("Prompt is required! Please enter a text prompt.")
+
+        # 2. Collect Valid API Keys
         keys = [k.strip() for k in [api_key_1, api_key_2, api_key_3] if k and k.strip()]
-        
         if not keys:
             raise ValueError("No API Key provided! Please enter at least one API Key.")
 
-        # 2. Prepare Input Image
-        img_tensor = image[0] 
-        i = 255. * img_tensor.cpu().numpy()
-        pil_img = Image.fromarray(np.clip(i, 0, 255).astype(np.uint8))
-        buffered = io.BytesIO()
-        pil_img.save(buffered, format="PNG")
-        img_bytes = buffered.getvalue()
+        # 3. Process Input Images
+        def tensor_to_bytes(image_tensor):
+            i = 255. * image_tensor[0].cpu().numpy()
+            pil_img = Image.fromarray(np.clip(i, 0, 255).astype(np.uint8))
+            buffered = io.BytesIO()
+            pil_img.save(buffered, format="PNG")
+            return buffered.getvalue()
 
-        # Internal API Call Function
+        image_parts = []
+        if image_1 is not None:
+            image_parts.append(types.Part.from_bytes(data=tensor_to_bytes(image_1), mime_type="image/png"))
+        if image_2 is not None:
+            image_parts.append(types.Part.from_bytes(data=tensor_to_bytes(image_2), mime_type="image/png"))
+        if image_3 is not None:
+            image_parts.append(types.Part.from_bytes(data=tensor_to_bytes(image_3), mime_type="image/png"))
+
+        print(f"Gemini Node: Processing with {len(image_parts)} input images.")
+
+        # 4. Internal API Call Function
         def call_api(current_key):
             client = genai.Client(api_key=current_key)
             
@@ -65,15 +83,15 @@ class Gemini3ProImageNode:
 
             print(f"Gemini Node: Sending request to {model_name} using Key ending in ...{current_key[-4:]}")
 
+            # Construct content parts (Prompt + Images)
+            content_parts = [types.Part.from_text(text=prompt)] + image_parts
+
             response_stream = client.models.generate_content_stream(
                 model=model_name,
                 contents=[
                     types.Content(
                         role="user",
-                        parts=[
-                            types.Part.from_text(text=prompt),
-                            types.Part.from_bytes(data=img_bytes, mime_type="image/png")
-                        ],
+                        parts=content_parts,
                     ),
                 ],
                 config=generate_content_config,
@@ -104,7 +122,7 @@ class Gemini3ProImageNode:
 
             return out_tensor, full_text
 
-        # 3. Robust Retry Logic
+        # 5. Robust Retry Logic (Max 10 retries)
         max_retries = 10 
         retry_count = 0
 
@@ -113,13 +131,11 @@ class Gemini3ProImageNode:
                 try:
                     return call_api(key)
                 except Exception as e:
-                    # Catch all errors (Network, 429, 500, etc.)
                     error_msg = str(e)
                     print(f"⚠️ Key #{index + 1} (...{key[-4:]}) Failed. Error: {error_msg}")
                     print(f"➡️ Switching to next key...")
-                    continue # Try next key
+                    continue 
             
-            # If all keys failed
             retry_count += 1
             print(f"🛑 All keys failed. Waiting 15s... (Retry {retry_count}/{max_retries})")
             time.sleep(15)
