@@ -1,1 +1,3 @@
-google-genaipillownumpy
+google-genai
+pillow
+numpy
