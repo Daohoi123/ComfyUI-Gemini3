@@ -23,8 +23,14 @@ cd ComfyUI/custom_nodes/
 git clone https://github.com/Daohoi123/ComfyUI-Gemini3.git
 ```
 **3. Install the required Python dependencies:**
+
+Navigate to ```ComfyUI-Gemini3```
 ```bash
-python_embeded\python.exe -m pip install -r ComfyUI\custom_nodes\ComfyUI-Gemini3\requirements.txt
+cd ComfyUI-Gemini3
+```
+Install the dependencies from ```requirements.txt```
+```bash
+..\\..\\..\\python_embeded\python.exe -m pip install -r requirements.txt
 ```
 *(Note: This node requires the official ```google-genai``` library)*.
 
