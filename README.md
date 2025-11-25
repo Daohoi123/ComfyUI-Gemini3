@@ -12,7 +12,8 @@ This node is engineered for high-demand production workflows, featuring built-in
 
 # 📦 Installation
 
-**Method 1: Manual Installation (Recommended)**
+**Manual Installation (Recommended)**
+
 **1. Navigate to your ComfyUI ```custom_nodes``` directory via terminal/command prompt:**
 ```bash
 cd ComfyUI/custom_nodes/
