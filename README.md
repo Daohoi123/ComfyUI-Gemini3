@@ -39,7 +39,8 @@ Install the dependencies from ```requirements.txt```
 **1. Add the Node:**
 - Right-click in the ComfyUI workflow canvas.
 - Navigate to: ```Gemini AI``` -> ```Gemini 3 Pro```.
-<img width="801" height="493" alt="image" src="https://github.com/user-attachments/assets/c5773166-3eb3-4da5-bb9e-0f8e9ece1149" />
+<img width="639" height="495" alt="image" src="https://github.com/user-attachments/assets/8d2e4d48-764e-4c7d-951a-92e244a8c389" />
+
 
 **2. Connect Inputs:**
 - ```image```: Connect an image source (e.g., ```Load Image```, ```VAE Decode```).
