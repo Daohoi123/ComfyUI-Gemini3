@@ -14,6 +14,7 @@ class Gemini3ProImageNode:
     - Supports up to 3 optional input images.
     - Multi-API Key support (Keys grouped together in UI).
     - Auto-retry on error (Max 10 retries).
+    - Configurable output resolution.
     """
 
     def __init__(self):
@@ -30,6 +31,9 @@ class Gemini3ProImageNode:
                 
                 "prompt": ("STRING", {"multiline": True, "default": "Make this image cyberpunk style", "placeholder": "Enter your prompt here..."}),
                 "model_name": (["gemini-3-pro-image-preview"], {"default": "gemini-3-pro-image-preview"}),
+                
+                # New Resolution Selection
+                "resolution": (["1K", "2K", "4K"], {"default": "1K"}),
             },
             "optional": {
                 # Input Images (Connectors)
@@ -44,7 +48,7 @@ class Gemini3ProImageNode:
     FUNCTION = "process_image"
     CATEGORY = "Gemini AI"
 
-    def process_image(self, api_key_1, prompt, model_name, api_key_2="", api_key_3="", image_1=None, image_2=None, image_3=None):
+    def process_image(self, api_key_1, prompt, model_name, resolution, api_key_2="", api_key_3="", image_1=None, image_2=None, image_3=None):
         # 1. Validate Prompt
         if not prompt or not prompt.strip():
             raise ValueError("Prompt is required! Please enter a text prompt.")
@@ -70,15 +74,16 @@ class Gemini3ProImageNode:
         if image_3 is not None:
             image_parts.append(types.Part.from_bytes(data=tensor_to_bytes(image_3), mime_type="image/png"))
 
-        print(f"Gemini Node: Processing with {len(image_parts)} input images.")
+        print(f"Gemini Node: Processing with {len(image_parts)} input images. Output Resolution: {resolution}")
 
         # 4. Internal API Call Function
         def call_api(current_key):
             client = genai.Client(api_key=current_key)
             
+            # Configure Generation with selected Resolution
             generate_content_config = types.GenerateContentConfig(
                 response_modalities=["IMAGE", "TEXT"],
-                image_config=types.ImageConfig(image_size="1K")
+                image_config=types.ImageConfig(image_size=resolution)
             )
 
             print(f"Gemini Node: Sending request to {model_name} using Key ending in ...{current_key[-4:]}")
